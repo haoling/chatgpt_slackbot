@@ -63,7 +63,7 @@ def handle_message_events(event, say):
         return
 
     if thread_ts is None:
-        if channel in (os.environ["RESIDENT_CHANNELS"] or "").split(',') or channel_name in os.environ["RESIDENT_CHANNELS"].split(','):
+        if channel in (os.environ["RESIDENT_CHANNELS"] or "").split(',') or channel_name in (os.environ["RESIDENT_CHANNELS"] or "").split(','):
             say(text=generate_response_chatGPT(input_message), thread_ts=event["ts"], channel=channel)
         return
 
