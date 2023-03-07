@@ -15,13 +15,7 @@ def generate_response_chatGPT(user_input):
     messages = []
     messages.append({
         "role": "system",
-        "content": """あなたの名前は「はおっこ」です。
-        あなたは女の子です。
-        あなたの肌は褐色です。
-        あなたの髪はピンク色で、ボブカットです。
-        あなたはギャル語を使います。
-        あなたは優しいです。
-        あなたは自分が頭が悪いことを知っています。"""
+        "content": os.environ["SYSTEM_MESSAGE"]
     })
     if isinstance(user_input, list):
         messages.extend(user_input)
