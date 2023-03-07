@@ -36,18 +36,23 @@ def handle_app_mention_events(event, say):
     input_message = input_message.replace("<@U04SMEAAB6Y> ", "")
     channel = event["channel"]
     thread_ts = event.get("thread_ts") or None
+    user_name = app.client.users_info(user=event["user"])["user"]["profile"]["display_name"]
 
     print("prompt: " + input_message)
 
     if "bot_id" in event:
         return
 
+    context = [
+        {"role": "system", "content": "* Userの名前は " + user_name + " です。"},
+        {"role": "user", "content": input_message}
+    ]
     if thread_ts is not None:
         parent_thread_ts = event["thread_ts"]
-        say(text=generate_response_chatGPT(input_message), thread_ts=parent_thread_ts, channel=channel)
+        say(text=generate_response_chatGPT(context), thread_ts=parent_thread_ts, channel=channel)
 
     else:
-        say(text=generate_response_chatGPT(input_message), thread_ts=event["ts"], channel=channel)
+        say(text=generate_response_chatGPT(context), thread_ts=event["ts"], channel=channel)
 
 @app.message(re.compile("."))
 def handle_message_events(event, say):
@@ -56,6 +61,7 @@ def handle_message_events(event, say):
     channel = event["channel"]
     channel_name = app.client.conversations_info(channel=channel)['channel']['name']
     thread_ts = event.get("thread_ts") or None
+    user_name = app.client.users_info(user=event["user"])["user"]["profile"]["display_name"]
 
     print("prompt: " + input_message)
 
@@ -64,7 +70,11 @@ def handle_message_events(event, say):
 
     if thread_ts is None:
         if channel in (os.environ["RESIDENT_CHANNELS"] or "").split(',') or channel_name in (os.environ["RESIDENT_CHANNELS"] or "").split(','):
-            say(text=generate_response_chatGPT(input_message), thread_ts=event["ts"], channel=channel)
+            context = [
+                {"role": "system", "content": "* Userの名前は " + user_name + " です。"},
+                {"role": "user", "content": input_message}
+            ]
+            say(text=generate_response_chatGPT(context), thread_ts=event["ts"], channel=channel)
         return
 
     # 親スレッドの情報を取得する
@@ -103,7 +113,9 @@ def handle_message_events(event, say):
     )
 
     # スレッドのリプライを、コンテキストに変換
-    contexts = []
+    contexts = [
+        {"role": "system", "content": "* Userの名前は " + user_name + " です。"}
+    ]
     print("context:")
     for reply in conversations_replies["messages"]:
         context = {
