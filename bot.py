@@ -54,6 +54,7 @@ def handle_message_events(event, say):
     input_message = event["text"]
     input_message = input_message.replace(f"<@{bot_user_id}> ", "")
     channel = event["channel"]
+    channel_name = app.client.conversations_info(channel=channel)['channel']['name']
     thread_ts = event.get("thread_ts") or None
 
     print("prompt: " + input_message)
@@ -62,6 +63,8 @@ def handle_message_events(event, say):
         return
 
     if thread_ts is None:
+        if channel in (os.environ["RESIDENT_CHANNELS"] or "").split(',') or channel_name in os.environ["RESIDENT_CHANNELS"].split(','):
+            say(text=generate_response_chatGPT(input_message), thread_ts=event["ts"], channel=channel)
         return
 
     # 親スレッドの情報を取得する
